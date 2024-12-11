@@ -13,6 +13,7 @@ My solutions for the Advent of Code challenge 2024, implemented in **Python**.
 |  08 |  [Resonant Collinearity](https://adventofcode.com/2024/day/8) | [day08.py](day08.py)
 |  09 |  [Disk Fragmenter](https://adventofcode.com/2024/day/9) | [day09.py](day09.py)
 |  10 |  [Hoof It](https://adventofcode.com/2024/day/10) | [day10.py](day10.py)
+|  11 |  [Plutonian Pebbles](https://adventofcode.com/2024/day/11) | [day11.py](day11.py)
 
 The challenges and all inputs were obtained from https://adventofcode.com/2024.
 
