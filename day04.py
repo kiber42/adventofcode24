@@ -16,6 +16,7 @@ def get_grid(filename):
     grid = np.array([[ch for ch in line] for line in data])
     return grid
 
+
 def count_occurrence(grid, phrase="XMAS"):
     g = lambda x, y: grid[y][x] if y >= 0 and x >= 0 and y < grid.shape[0] and x < grid.shape[1] else 0
     dirs = np.array([[-1, -1], [ 0, -1], [+1, -1],

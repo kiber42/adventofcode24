@@ -8,6 +8,7 @@ examplefile = "example{:02}.txt".format(day)
 inputfile = "input{:02}.txt".format(day)
 
 # ------------------------------------------
+
 import numpy as np
 
 def get_profile(filename):

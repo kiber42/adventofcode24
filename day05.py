@@ -33,6 +33,7 @@ def fixup(update, rules):
         else:
             good += 1
 
+
 def get_answers(filename):
     updates, rules = get_updates_and_rules(filename)
     correct_checksum = 0

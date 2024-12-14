@@ -23,7 +23,7 @@ def try_satisfy(operands, test_value, operations):
     if len(operands) < 2:
         return False
     if operands[0] > test_value:
-        # + and * can only increase the value
+        # all of the operations can only increase the value
         return False
     return any(try_satisfy([op(operands[0], operands[1])] + operands[2:], test_value, operations) for op in operations)
 
