@@ -25,11 +25,11 @@ This year I'm allowing myself to use SciPy where it makes sense.
 |  18 |  [RAM Run](https://adventofcode.com/2024/day/18) | [day18.py](day18.py)
 |  19 |  [Linen Layout](https://adventofcode.com/2024/day/19) | [day19.py](day19.py)
 |  20 |  [Race Condition](https://adventofcode.com/2024/day/20) | [day20.py](day20.py)
-|  21 |  [](https://adventofcode.com/2024/day/21) | [day21.py](day21.py)
-|  22 |  [](https://adventofcode.com/2024/day/22) | [day22.py](day22.py)
-|  23 |  [](https://adventofcode.com/2024/day/23) | [day23.py](day23.py)
-|  24 |  [](https://adventofcode.com/2024/day/24) | [day24.py](day24.py)
-|  25 |  [](https://adventofcode.com/2024/day/25) | [day25.py](day25.py)
+|  21 |  [Keypad Conundrum](https://adventofcode.com/2024/day/21) | [day21.py](day21.py)
+|  22 |  [Monkey Market](https://adventofcode.com/2024/day/22) | [day22.py](day22.py)
+|  23 |  [LAN Party](https://adventofcode.com/2024/day/23) | [day23.py](day23.py)
+|  24 |  [Crossed Wires](https://adventofcode.com/2024/day/24) | [day24.py](day24.py)
+|  25 |  [Code Chronicle](https://adventofcode.com/2024/day/25) | [day25.py](day25.py)
 
 The challenges and all inputs were obtained from https://adventofcode.com/2024.
 
