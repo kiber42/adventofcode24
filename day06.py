@@ -9,75 +9,53 @@ inputfile = "input{:02}.txt".format(day)
 
 # ------------------------------------------
 
-def get_obstacles_and_size_and_starting_pos(filename):
+def get_obstacles_and_starting_pos(filename):
     rows = open(filename).read().strip().split("\n")
-    obstacles = set()
-    for y, row in enumerate(rows):
-        for x, c in enumerate(row):
-            if c == "#":
-                obstacles.add((x, y))
-            elif c == "^":
-                start = (x, y)
-    return obstacles, (len(rows[0]), len(rows)), start
+    obstacles = [[c == "#" for c in row] for row in rows]
+    start = next((x, y) for y, row in enumerate(rows) for x, c in enumerate(row) if c =="^")
+    return obstacles, start
 
 
-# Directions: 0 up, 1 right, 2 down, 3 left
-def advance(pos, dir):
-    if dir == 0:
-        return (pos[0], pos[1] - 1)
-    if dir == 1:
-        return (pos[0] + 1, pos[1])
-    if dir == 2:
-        return (pos[0], pos[1] + 1)
-    if dir == 3:
-        return (pos[0] - 1, pos[1])
-
-
-def is_inside(pos, area_size):
-    return pos[0] >=0 and pos[0] < area_size[0] \
-        and pos[1] >= 0 and pos[1] < area_size[1]
-
-
-def try_add(set_, item):
-    n = len(set_)
-    set_.add(item)
-    return len(set_) > n
-
-
-def trace_path(obstacles, area_size, start, dir=0):
-    pos = start
+def trace_path(obstacles, start):
+    def is_inside(x, y, max_x=len(obstacles[0]), max_y=len(obstacles)):
+        return x >=0 and x < max_x and y >= 0 and y < max_y
     visited = set()
-    visited_with_dir = set()
-    while is_inside(pos, area_size):
-        visited.add(pos)
-        found_loop = not try_add(visited_with_dir, (pos, dir))
-        if found_loop:
+    def has_visited(x, y, dir):
+        n = len(visited)
+        visited.add((x, y, dir))
+        return len(visited) == n
+    x, y = start
+    dir = 0
+    dirs = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+    while True:
+        if has_visited(x, y, dir):
             return None
-        pos_new = advance(pos, dir)
-        if pos_new in obstacles:
+        x_new, y_new = x + dirs[dir][0], y + dirs[dir][1]
+        if not is_inside(x_new, y_new):
+            break
+        if obstacles[y_new][x_new]:
             dir = (dir + 1) % 4
         else:
-            pos = pos_new
-    return visited
+            x, y = x_new, y_new
+    return set((x, y) for x, y, _ in visited) # discard direction information
 
 
-def count_valid_spots(obstacles, area_size, start, normal_path):
+def count_valid_spots(obstacles, start, candidate_positions):
     num_valid = 0
-    normal_path = trace_path(obstacles, area_size, start)
-    for pos in normal_path:
-        if pos == start:
-            continue
-        obstacles.add(pos)
-        if trace_path(obstacles, area_size, start) is None:
+    candidate_positions.remove(start)
+    for pos in candidate_positions:
+        x, y = pos
+        obstacles[y][x] = True
+        if trace_path(obstacles, start) is None:
             num_valid += 1
-        obstacles.remove(pos)
+        obstacles[y][x] = False
     return num_valid
 
 
 def get_answers(filename):
-    obstacles, area_size, start = get_obstacles_and_size_and_starting_pos(filename)
-    normal_path = trace_path(obstacles, area_size, start)
-    return len(normal_path), count_valid_spots(obstacles, area_size, start, normal_path)
+    obstacles, start = get_obstacles_and_starting_pos(filename)
+    path = trace_path(obstacles, start)
+    return len(path), count_valid_spots(obstacles, start, path)
 
 
 if __name__ == "__main__":
