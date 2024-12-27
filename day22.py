@@ -2,28 +2,55 @@
 # ------------------------------------------
 
 day = 22
-expected = (37327623, None)
+expected = (37327623, 24)
 
 examplefile = "example{:02}.txt".format(day)
 inputfile = "input{:02}.txt".format(day)
 
 # ------------------------------------------
 
+from collections import defaultdict
+
 def get_data(filename):
-    return open(filename).read().splitlines()
+    return [int(secret) for secret in open(filename).read().splitlines()]
 
 
-def part_one(data):
-    return None
+def evolve(secret, n = 1):
+    for _ in range(n):
+        secret = (secret ^ (secret << 6)) % 0x1000000
+        secret ^= secret >> 5
+        secret ^= secret << 11
+    return secret % 0x1000000
 
 
-def part_two(data):
-    return None
+def part_one(secrets):
+    return sum(evolve(secret, 2000) for secret in secrets)
+
+
+def part_two(secrets):
+    bananas = defaultdict(lambda: 0)
+    for secret in secrets:
+        seen = set()
+        def is_new_combination(combo):
+            n = len(seen)
+            seen.add(combo)
+            return len(seen) > n
+        deltas = []
+        for _ in range(2000):
+            prev, secret = secret, evolve(secret)
+            deltas.append((secret % 10) - (prev % 10))
+            if len(deltas) < 4:
+                continue
+            combo = tuple(deltas)
+            if is_new_combination(combo):
+                bananas[combo] += secret % 10
+            deltas = deltas[1:]
+    return max(bananas.values())
 
 
 def get_answers(filename):
-    data = get_data(filename)    
-    return part_one(data), part_two(data)
+    secrets = get_data(filename)    
+    return part_one(secrets), part_two(secrets)
 
 
 if __name__ == "__main__":
