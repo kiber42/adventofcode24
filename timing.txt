@@ -9,7 +9,7 @@ day08.py 0.01s
 day09.py 5.47s
 day10.py 0.59s
 day11.py 0.17s
-day12.py 36.60s
+day12.py 0.33s
 day13.py 0.41s
 day14.py 3.60s
 day15.py 2.66s

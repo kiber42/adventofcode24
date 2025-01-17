@@ -9,64 +9,83 @@ inputfile = "input{:02}.txt".format(day)
 
 # ------------------------------------------
 
+from collections import defaultdict
 import numpy as np
-from scipy.ndimage import label
 
 def get_data(filename):
-    return np.array([[ord(c) for c in row] for row in open(filename).read().splitlines()])
+    return np.array([[ord(c)-ord("A") for c in row] for row in open(filename).read().splitlines()], dtype=int)
 
 
-def find_patches(data):
-    # First, find the areas with the same type of crop
-    groups = [data == index for index in np.unique(data)]
-    # Each area might be disjoint and contain multiple patches
-    patches = []
-    for group in groups:
-        labelled, num_labels = label(group)
-        patches.extend(labelled == index for index in range(1, num_labels + 1))
-    return patches
+def find_disconnected_patches(field):
+    # Add a border to make our life easier
+    field = np.pad(field, 1, mode="constant", constant_values=1000)    
+    rows, cols = field.shape
+    num_patches = 0
+
+    def flood_fill(y0, x0, new_color):
+        to_process = set([(y0, x0)])
+        old_color = field[y0, x0]
+        while len(to_process) > 0:
+            y, x = to_process.pop()
+            if field[y, x] == old_color:
+                field[y, x] = new_color
+                to_process.add((y - 1, x))
+                to_process.add((y + 1, x))
+                to_process.add((y, x - 1))
+                to_process.add((y, x + 1))
+
+    for y in range(rows):
+        for x in range(cols):
+            if field[y, x] < 1000:
+                num_patches += 1
+                flood_fill(y, x, 1000 + num_patches)
+
+    return field
 
 
-def fence_price(patch):
-    area = sum(patch.reshape(-1))
-    patch = np.pad(patch, pad_width=1, mode="constant", constant_values = False)
-    perimeter = 0
-    coords = np.where(patch)
-    for y, x in zip(coords[0], coords[1]):
-        assert(patch[y][x])
-        if not patch[y - 1][x]: perimeter += 1
-        if not patch[y + 1][x]: perimeter += 1
-        if not patch[y][x - 1]: perimeter += 1
-        if not patch[y][x + 1]: perimeter += 1
-    return area * perimeter
+def calculate_prices(patches):
+    area = defaultdict(lambda: 0)
+    perimeter = defaultdict(lambda: 0)
+    # count corners instead of sides (they are identical on a closed contour)
+    corners = defaultdict(lambda: 0)
 
-
-def discounted_fence_price(patch):
-    area = sum(patch.reshape(-1))
-    patch = np.pad(patch, pad_width=1, mode="constant", constant_values = False)
-    corners = 0 # There are as many corners as sides in a closed contour
-    coords = np.where(patch)
-    for y, x in zip(coords[0], coords[1]):
-        # There are 8 types of corners, 4 convex and 4 concave
-        if not patch[y - 1][x]:
-            if not patch[y][x - 1]: corners += 1 # convex top left
-            if not patch[y][x + 1]: corners += 1 # convex top right
-        else:
-            if patch[y][x - 1] and not patch[y - 1][x - 1]: corners += 1 # concave top left
-            if patch[y][x + 1] and not patch[y - 1][x + 1]: corners += 1 # concave top right
-        if not patch[y + 1][x]:
-            if not patch[y][x - 1]: corners += 1 # convex bottom left
-            if not patch[y][x + 1]: corners += 1 # convex bottom right
-        else:
-            if patch[y][x - 1] and not patch[y + 1][x - 1]: corners += 1 # concave bottom left
-            if patch[y][x + 1] and not patch[y + 1][x + 1]: corners += 1 # concave bottom right
-    return area * corners
+    # iterate over 3 x 3 submatrices to identify boundaries and corners
+    rows, cols = patches.shape
+    for y in range(rows - 2):
+        for x in range(cols - 2):
+            sub = patches[y:y + 3, x:x + 3]
+            current = sub[1, 1]
+            area[current] += 1
+            same_above = current == sub[0, 1]
+            same_below = current == sub[2, 1]
+            same_on_left = current == sub[1, 0]
+            same_on_right = current == sub[1, 2]
+            if same_above:
+                if same_on_left and current != sub[0, 0]: corners[current] += 1 # concave top left
+                if same_on_right and current != sub[0, 2]: corners[current] += 1 # concave top right
+            else:
+                perimeter[current] += 1
+                if not same_on_left: corners[current] += 1 # convex top left
+                if not same_on_right: corners[current] += 1 # convex top right
+            if same_below:
+                if same_on_left and current != sub[2, 0]: corners[current] += 1 # concave bottom left
+                if same_on_right and current != sub[2, 2]: corners[current] += 1 # concave bottom right
+            else:
+                perimeter[current] += 1
+                if not same_on_left: corners[current] += 1 # convex bottom left
+                if not same_on_right: corners[current] += 1 # convex bottom right
+            if not same_on_left: perimeter[current] += 1
+            if not same_on_right: perimeter[current] += 1
+    price, discounted = 0, 0
+    for crop in area.keys():
+        price += area[crop] * perimeter[crop]
+        discounted += area[crop] * corners[crop]
+    return price, discounted
 
 
 def get_answers(filename):
-    patches = find_patches(get_data(filename))
-    return sum(fence_price(patch) for patch in patches), \
-           sum(discounted_fence_price(patch) for patch in patches)
+    patches = find_disconnected_patches(get_data(filename))
+    return calculate_prices(patches)
 
 
 if __name__ == "__main__":
