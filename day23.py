@@ -92,7 +92,29 @@ def part_one(pairs):
     return sum(1 for triplet in triplets if any(t.startswith("t") for t in triplet))
 
 
-def part_two(pairs):
+def part_two_bron_kerbosch(pairs):
+    neighbours = defaultdict(lambda: set())
+    for a, b in pairs:
+        neighbours[a].add(b)
+        neighbours[b].add(a)
+
+    def recurse(R, P, X):
+        if len(P) == 0 and len(X) == 0:
+            yield R
+        while P:
+            # Attempt to move vertex p from P to R.
+            # Only neighbours of p remain in P and X, any other vertex will no
+            # longer be considered for finding a clique.
+            p = P.pop()
+            yield from recurse(R | {p}, P & neighbours[p], X & neighbours[p])
+            X.add(p)
+
+    maximal_cliques = recurse(set(), set(neighbours.keys()), set())
+    longest = max(maximal_cliques, key=len)
+    return ",".join(sorted(longest))
+
+
+def part_two_bruteforce(pairs):
     # map names to integers, hopefully slightly more performant
     index = -1
     def get_index():
@@ -117,7 +139,7 @@ def part_two(pairs):
 
 def get_answers(filename):
     pairs = get_data(filename)
-    return part_one(pairs), part_two(pairs)
+    return part_one(pairs), part_two_bron_kerbosch(pairs)
 
 
 if __name__ == "__main__":
